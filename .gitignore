@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+
+outputs/
+paper/figures/
+
+metrics/tests/toy_domain/
+metrics/tests/toy_output/
+metrics/tests/gt_terrain_plots/
+
+*.nc
+*.pkl
+*.log
+

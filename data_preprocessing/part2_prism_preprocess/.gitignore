@@ -1,0 +1,10 @@
+work/
+ignore/
+__pycache__/
+*.py[cod]
+*.nc
+*.npy
+*.json
+*.md.tmp
+*.log
+*.png

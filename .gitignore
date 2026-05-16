@@ -12,3 +12,11 @@ metrics/tests/gt_terrain_plots/
 *.pkl
 *.log
 
+baselines/unet_diffusion_corrdiff/outputs/*
+baselines/unet_diffusion_corrdiff/checkpoints/*
+baselines/unet_diffusion_corrdiff/training-runs/*
+baselines/unet_diffusion_corrdiff/data/*
+baselines/unet_diffusion_corrdiff/generated/*
+baselines/unet_diffusion_corrdiff/logs/*
+baselines/unet_diffusion_corrdiff/dataset_root/*
+baselines/unet_diffusion_corrdiff/results/*

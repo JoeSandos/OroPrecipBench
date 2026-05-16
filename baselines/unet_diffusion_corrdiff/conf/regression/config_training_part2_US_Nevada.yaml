@@ -1,0 +1,63 @@
+hydra:
+  searchpath:
+    - pkg://conf/base # Do not modify
+
+defaults:
+  - optim: adam # adam 或 soap
+
+outdir: training-runs/regression
+arch: ddpmpp
+duration: 100         # 训练持续时间（以百万图像数计 Million）  20K 样本数 * 5K epoch = 100Ms
+
+# 数据集配置
+dataset:
+  type: MyDataset
+  input_path: dataset_root/part2-US-Nevada/train_data_in.nc
+  output_path: dataset_root/part2-US-Nevada/train_data_out.nc
+  invariant_path: dataset_root/part2-US-Nevada/static_variables.nc
+  stats_path: dataset_root/part2-US-Nevada/stats.json
+  input_variables: ["tp", "t2m", "u10", "v10"]
+  output_variables: ["tp"]
+  invariant_variables: ["elevation", "lsm"]
+  input_log_variables: ["tp"]
+  output_log_variables: ["tp"]
+
+
+# 验证数据集配置 (可选)
+validation:
+  input_path: dataset_root/part2-US-Nevada/val_data_in.nc
+  output_path: dataset_root/part2-US-Nevada/val_data_out.nc
+  # 此处未指定的所有其他参数都从 dataset 部分继承
+
+generation:
+  max_samples: 100
+  threshold: 0.01
+
+
+# 超参数
+batch: 256            # 总 batch size
+batch_gpu: 16          # Limit batch size per GPU
+cbase: null           # 通道基数乘数（默认随架构变化） [default: varies]
+cres: null            # 通道分辨率 [default: varies]
+ema: 0.5              # EMA 衰减率
+dropout: 0.13         # Dropout 比例
+augment: 0.0          # 数据增强强度
+xflip: false          # 水平翻转数据增强
+
+# Performance-related 与性能相关的选项
+fp16: false           # 启用混合精度训练
+ls: 1.0               # 损失缩放
+bench: true           # 启用 cuDNN 基准优化
+cache: true           # 将数据集缓存到 CPU 内存
+workers: 1            # DataLoader 工作进程数量
+
+# I/O-related
+desc: null            # 包含在结果目录名中的字符串
+nosubdir: false       # 不创建子目录，直接在 outdir 中保存结果
+tick: 20              # 进度打印频率（千图像数计）默认每 20k 图像打印一次
+snap: 1               # 快照保存频率（以 tick 计）默认每 1 tick = 20k 图像保存一次
+dump: 10              # 状态转储频率（以 tick 计）默认每 10tick = 200k 图像转储一次
+seed: 42              # 随机种子
+transfer: null        # 从 pkl 进行迁移学习
+resume: null          # 从 pkl 恢复训练
+dry_run: false        # 仅进行配置和初始化检查，不进行训练

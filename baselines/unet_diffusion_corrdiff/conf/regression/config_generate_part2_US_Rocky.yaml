@@ -1,0 +1,19 @@
+# 数据集配置
+dataset:
+  type: MyDataset
+  input_path: dataset_root/part2-US-Rocky/test_data_in.nc
+  output_path: dataset_root/part2-US-Rocky/test_data_out.nc
+  invariant_path: dataset_root/part2-US-Rocky/static_variables.nc
+  stats_path: dataset_root/part2-US-Rocky/stats.json
+  input_variables: ["tp", "t2m", "u10", "v10"]
+  output_variables: ["tp"]
+  invariant_variables: ["elevation", "lsm"]
+  input_log_variables: ["tp"]
+  output_log_variables: ["tp"]
+
+
+generation:
+  num_workers: 1
+  checkpoint_dir: 
+  output_path: generated/regression/
+  

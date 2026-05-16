@@ -1,0 +1,25 @@
+# 数据集配置
+dataset:
+  type: MyDataset
+  input_path: dataset_root/part1-US-Cascades/test_data_in_ERA5.nc
+  output_path: dataset_root/part1-US-Cascades/test_data_out.nc
+  invariant_path: dataset_root/part1-US-Cascades/static_variables.nc
+  stats_path: dataset_root/part1-US-Cascades/stats.json
+  input_variables: ["tp", "t2m", "u10", "v10"]
+  output_variables: ["tp"]
+  invariant_variables: ["elevation", "lsm"]
+  input_log_variables: ["tp"]
+  output_log_variables: ["tp"]
+
+
+generation:
+  sampler_type: deterministic # 采样器类型: stochastic or deterministic
+  # 最好 nproc-per-node(进程数) * seed_batch_size = num_ensembles
+  num_ensembles: 8 # 生成样本的集合数量
+  seed_batch_size: 8 # 每个批次的种子数量
+  num_workers: 1
+  hr_mean_conditioning: true  # 是否将高分辨率均值作为条件输入
+  regression_checkpoint_path: 
+  residual_checkpoint_path: 
+  output_path: generated/residual_diffusion/
+  

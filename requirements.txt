@@ -1,0 +1,34 @@
+# Core scientific Python
+numpy
+scipy
+pandas
+
+# NetCDF + labeled arrays
+xarray
+netCDF4
+h5netcdf
+cftime
+
+# Geospatial IO
+rasterio
+rioxarray
+
+# Progress / CLI
+tqdm
+
+# Verification / scoring utilities
+properscoring
+pysteps
+
+# Plotting (used by sanity-check scripts and terrain plotting)
+matplotlib
+
+# Image/structure metrics
+scikit-image
+
+# Optional: mapping utilities used by some notebooks/analysis (safe to install)
+cartopy
+
+# Optional: convenience (some scripts in baselines may require these)
+click
+typer

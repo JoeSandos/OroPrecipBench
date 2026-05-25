@@ -6,7 +6,7 @@ OroPrecipBench provides:
 - A reproducible **data preprocessing** pipeline to construct benchmark-ready inputs/targets.
 - A set of standardized **evaluation metrics** tailored to precipitation downscaling over complex terrain.
 
-> **Baselines**: will be released after the paper is accepted.
+**Baselines**: in the main text, we also evaluate the SOTA baselines and will release the implementation soon.
 
 ---
 
@@ -248,30 +248,3 @@ python data_preprocessing/part2_prism_preprocess/step4_validate.py
 - `stats.json`
 
 Validation reports are written under the staging root.
-
----
-
-## Citation
-
-If you use OroPrecipBench in your research, please cite the corresponding paper:
-
-```bibtex
-@article{oroprecipbench,
-  title   = {OroPrecipBench: a km-scale benchmark for spatial precipitation downscaling over complex terrain},
-  author  = {TODO},
-  journal = {TODO},
-  year    = {TODO}
-}
-```
-
----
-
-## License
-
-See `LICENSE` (if provided).
-
----
-
-## Contact
-
-Please open a GitHub Issue for questions or bug reports.

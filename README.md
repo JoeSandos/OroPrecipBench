@@ -2,6 +2,8 @@
 
 Official repository for **"OroPrecipBench: a km-scale benchmark for spatial precipitation downscaling over complex terrain"**.
 
+Benchmark dataset link:  https://www.modelscope.cn/datasets/OroPrecipBench/OroPrecipBench
+
 OroPrecipBench provides:
 - A reproducible **data preprocessing** pipeline to construct benchmark-ready inputs/targets.
 - A set of standardized **evaluation metrics** tailored to precipitation downscaling over complex terrain.
@@ -46,7 +48,7 @@ python -m metrics.run_metrics \
 
 - `metrics/`: metric implementations + CLI runners.
 - `data_preprocessing/`: preprocessing pipelines.
-
+- `baselines/`: baseline implementation.
 ---
 
 ## Metrics

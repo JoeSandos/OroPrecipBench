@@ -34,16 +34,18 @@ python -m metrics.run_metrics \
     --max-ens 8
 ```
 
-### 3) Preprocess data (Part 2 / ERA5)
+### 3) Preprocess data
 
-See `data_preprocessing/part2_era5_preprocess/README.md` for the full step-by-step workflow.
+- **Part 1 (HRRR→HRRR)**: `data_preprocessing/part1_hrrr-hrrr_preprocess/guide.md`
+- **Part 2 inputs (ERA5)**: `data_preprocessing/part2_era5_preprocess/README.md`
+- **Part 2 targets (PRISM)**: `data_preprocessing/part2_prism_preprocess/README.md`
 
 ---
 
 ## Repository Layout
 
 - `metrics/`: metric implementations + CLI runners.
-- `data_preprocessing/`: preprocessing pipelines (e.g., ERA5 Part 2 workflow).
+- `data_preprocessing/`: preprocessing pipelines.
 
 ---
 
@@ -143,40 +145,109 @@ Each runner writes to `--out-dir`:
 
 ## Data Preprocessing
 
-### Part 2 (ERA5) workflow
+OroPrecipBench includes **three** reproducible preprocessing workflows covering Part 1 (hourly) and Part 2 (daily). Each workflow produces a domain-centric `dataset_root/` that is directly consumed by metric runners and (future) baselines.
 
-A complete step-by-step preprocessing pipeline is provided under:
+### Part 1 (HRRR → HRRR) hourly benchmark construction
 
-- `data_preprocessing/part2_era5_preprocess/`
+- Location: `data_preprocessing/part1_hrrr-hrrr_preprocess/`
+- Main guide: `data_preprocessing/part1_hrrr-hrrr_preprocess/guide.md`
 
-The workflow is organized as `step1-*` through `step6-*` scripts:
+**Goal.** Build the **Part 1 hourly** downscaling benchmark where:
+- **Low-resolution inputs** come from HRRR 3 km fields spatially **coarsened to 25 km** (typical shape `24×24`; variables such as `tp`, `t2m`, `u10`, `v10`).
+- **High-resolution targets** are HRRR 3 km precipitation `tp` on the native high-res grid (typical shape `192×192`).
+- **Static variables** (e.g., `elevation`, `lsm`) are provided at high resolution (`192×192`) and reused across splits.
 
-1. **Download** missing global hourly ERA5 files (optional; uses `cdsapi`).
-2. **Crop & merge** to multiple US regions; merge variables; difference accumulated variables when needed; convert `tp` from meters to `mm/h`.
-3. **Check** for missing variables.
-4. **Build** Part 2 daily `dataset_root` (daily aggregation: sum for `tp/ssrd/tisr`, mean for other variables; train/val/test splits).
-5. **Merge** additional training years (2000–2009) and rewrite `stats.json` (optional).
-6. **Interpolate** ERA5 inputs to the Part 1 HRRR 24×24 low-resolution curvilinear grid.
+**Expected output layout (per domain).**
 
-For exact commands and expected directory layouts, follow:
+`dataset_root/part1-US-<Domain>/` typically contains:
+- `train_data_in.nc`, `val_data_in.nc`, `test_data_in.nc` (low-res predictors)
+- `train_data_out.nc`, `val_data_out.nc`, `test_data_out.nc` (high-res precipitation target, `tp`, units `mm/h`)
+- `static_variables.nc` (e.g., `elevation`, `lsm`)
+- `stats.json` (normalization statistics; precipitation commonly includes `log(1+x)` stats)
+
+**How to run (CLI entrypoints).**
+
+The workflow is implemented as step scripts (see the guide for details):
+
+```bash
+python data_preprocessing/part1_hrrr-hrrr_preprocess/step1_build_hrrr-hrrr.py --help
+python data_preprocessing/part1_hrrr-hrrr_preprocess/step2_cal_stats.py --help
+```
+
+Notes:
+- HRRR variables may have missing timestamps; when merging variables, the workflow uses the **intersection of valid times** to keep time alignment consistent.
+- Some scripts ship with local default paths; for reproducibility, prefer passing your own data roots via CLI args.
+
+### Part 2 inputs (ERA5) daily dataset construction
+
+- Location: `data_preprocessing/part2_era5_preprocess/`
+- Documentation: `data_preprocessing/part2_era5_preprocess/README.md`
+
+**Goal.** Construct **Part 2 daily** *inputs* from ERA5, organized by the same benchmark domains, and optionally interpolate inputs onto the Part 1 low-resolution HRRR curvilinear grid.
+
+**Pipeline summary (step1 → step6).**
+
+1. Download missing global hourly ERA5 files (optional; uses `cdsapi`).
+2. Crop global ERA5 to the five US benchmark domains and merge variables; convert `tp` to `mm/h`.
+3. Check for missing variables in regional outputs.
+4. Build the Part 2 **daily** `dataset_root` (`train/val/test_data_in.nc`) via daily aggregation:
+   - sum: `tp`, `ssrd`, `tisr`
+   - mean: other variables
+   (the corrupted date `2018-08-22` is excluded by default)
+5. Optionally prepend older train years (2000–2009) and recompute `stats.json`.
+6. Interpolate Part 2 inputs to the **Part 1 24×24** low-resolution HRRR grid and recompute metadata.
+
+**How to run.** Follow the exact commands in the workflow README:
 
 - `data_preprocessing/part2_era5_preprocess/README.md`
 
-### Recommended output layout
+### Part 2 targets (PRISM) daily precipitation mapping
 
-After preprocessing, the repository expects a domain-centric `dataset_root` layout, e.g.:
+- Location: `data_preprocessing/part2_prism_preprocess/`
+- Documentation: `data_preprocessing/part2_prism_preprocess/README.md`
 
-```text
-dataset_root/
-  part2-US-Rocky/
-    train_data_in.nc
-    val_data_in.nc
-    test_data_in.nc
-    stats.json
-    status.json
-  part2-US-Cascades/
-  ...
+**Goal.** Build the **Part 2 PRISM target** dataset by mapping daily PRISM precipitation to each of the five 192×192 benchmark domains, then assembling split-level NetCDF files and computing normalization statistics.
+
+**Inputs.**
+
+- Daily PRISM ZIP archives, organized by year, named like:
+  `prism_ppt_us_25m_YYYYMMDD.zip`
+- HRRR reference coordinate files:
+  `part1-US-<Domain>_lat_lon_192_192.nc` (used as the target grid)
+
+**Default time split.**
+
+- train: 2000-01-01 → 2021-12-31
+- val: 2022-01-01 → 2022-12-31
+- test: 2023-01-01 → 2024-12-31
+
+The corrupted PRISM date `2018-08-22` is skipped.
+
+**Configuration (environment variables).**
+
+```bash
+export OROPRECIPBENCH_PRISM_RAW_ROOT=/path/to/prism/raw/ppt/daily
+export OROPRECIPBENCH_PRISM_STAGING_ROOT=/path/to/staging
+export OROPRECIPBENCH_PRISM_OUTPUT_ROOT=/path/to/dataset_root
 ```
+
+**How to run (step0 → step4).**
+
+```bash
+python data_preprocessing/part2_prism_preprocess/step0_prepare.py
+python data_preprocessing/part2_prism_preprocess/step1_extract_interpolate.py --workers 8
+python data_preprocessing/part2_prism_preprocess/step2_assemble_netcdf.py
+python data_preprocessing/part2_prism_preprocess/step3_compute_stats.py
+python data_preprocessing/part2_prism_preprocess/step4_validate.py
+```
+
+**Outputs (per domain).**
+
+`$OROPRECIPBENCH_PRISM_OUTPUT_ROOT/part2-US-<Domain>/`:
+- `train_data_out.nc`, `val_data_out.nc`, `test_data_out.nc`
+- `stats.json`
+
+Validation reports are written under the staging root.
 
 ---
 

@@ -4,11 +4,10 @@ Official repository for **"OroPrecipBench: a km-scale benchmark for spatial prec
 
 Benchmark dataset link:  https://www.modelscope.cn/datasets/OroPrecipBench/OroPrecipBench
 
-OroPrecipBench provides:
+This repository provides:
 - A reproducible **data preprocessing** pipeline to construct benchmark-ready inputs/targets.
 - A set of standardized **evaluation metrics** tailored to precipitation downscaling over complex terrain.
-
-**Baselines**: in the main text, we also evaluate the SOTA baselines and will release the implementation soon.
+- **Baselines**: in the main text, we also evaluate the SOTA baselines and will release the implementation soon.
 
 ---
 
